@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">我的待辦工作</string>
+    <string name="title_activity_edit_todo">待辦工作</string>
+
+    <string name="scheduled_time">預定時間</string>
+    <string name="create_time">建立時間</string>
+    <string name="complete_time">建立時間</string>
+    <string name="notes">內容</string>
+    <string name="completed">己完成</string>
+    <string name="unfinished">未完成</string>
+    <string name="notododata">目前無待辦資料</string>
+
+    <string name="add_data">新增資料</string>
+    <string name="update_data">修改資料</string>
+    <string name="drop_data">刪除資料</string>
+</resources>
