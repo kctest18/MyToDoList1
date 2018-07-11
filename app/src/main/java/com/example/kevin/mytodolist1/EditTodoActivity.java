@@ -19,6 +19,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -48,8 +49,8 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_todo);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
         sdf.setTimeZone(TimeZone.getDefault());
         sdfDate.setTimeZone(TimeZone.getDefault());
         sdfTime.setTimeZone(TimeZone.getDefault());
@@ -165,6 +166,7 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
         edtSchdTime.setText((scheduled_time==null?"":sdfTime.format(scheduled_time)));
         txtCreateTime.setText((create_time==null?"":sdf.format(create_time)));
         txtCompleteTime.setText((complete_time==null?"":sdf.format(complete_time)));
+        chkComplete.setSelected((complete_time==null?false:true));
         edtNotes.setText(notes);
     }
 
@@ -304,6 +306,9 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                     }, mHour, mMinute, true);
                 timePickerDialog.show();
                 break;
+            case R.id.chkComplete:
+                Log.d("chkComplete:", "chkCOmplete.isEnable()="+(chkComplete.isSelected()?"true":"false"));
+
         }
     }
 }

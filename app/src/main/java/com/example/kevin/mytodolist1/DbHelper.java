@@ -29,7 +29,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 KEY_COMPLETE_TIME + " datetime," +
                 KEY_NOTES + " text," +
                 KEY_COLOR + " integer);";
-        db.execSQL("drop table "+TABLE_NAME+";");
+//        db.execSQL("drop table "+DATABASE_NAME+"."+TABLE_NAME+";");
         db.execSQL(DATABASE_CREATE);
     }
 
