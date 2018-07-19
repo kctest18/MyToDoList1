@@ -24,8 +24,8 @@ public class DbAdapter {
     private Context mCtx;
     private DbHelper mDbHelper;
     private SQLiteDatabase mdb;
-    private Intent intent;
-    private ContentValues values;
+//    private Intent intent;
+//    private ContentValues values;
 
     public DbAdapter(Context context) {
         this.mCtx =context;
@@ -49,10 +49,10 @@ public class DbAdapter {
         }
         Log.d(CLASSNAME+":close()", "End");
     }
-    public long createTodo(String scheduled_time, String notes, int color)
+    public long createTodo(String scheduled_time, String notes, String color)
     {
         long ret=0;
-        Log.d(CLASSNAME+":createTodo()","Begin");
+        Log.d("DbAdapter","createTodo():Begin");
         ContentValues values=new ContentValues();
         values.put(KEY_SCHEDULED_TIME, scheduled_time);
         values.put(KEY_NOTES, notes);
@@ -61,20 +61,20 @@ public class DbAdapter {
         {
             ret=mdb.insert(TABLE_NAME,null,values);
             Toast.makeText(mCtx, "新增成功!", Toast.LENGTH_SHORT).show();
-            Log.d(CLASSNAME+":ccreateContact()","ret="+ret);
+            Log.d("DbAdapter", "createContact():ret="+ret);
         }
         catch (Exception e)
         {
-            Log.d(CLASSNAME+":ccreateContact()","mdb.insert() error");
+            Log.d("DbAdapter","createContact():mdb.insert() error");
             e.printStackTrace();
         }
-        Log.d(CLASSNAME+":ccreateContact()", "End, ret="+ret);
+        Log.d("DbAdapter", "createContact():End, ret="+ret);
         return ret;
     }
 
-    public long updateToDo(int id, String scheduled_time, String complete_time, String notes, int color)
+    public long updateToDo(int id, String scheduled_time, String complete_time, String notes, String color)
     {
-        Log.d(CLASSNAME+":updateToDo()","Begin");
+        Log.d("DbAdapter","updateToDo():Begin");
         long ret=0;
         ContentValues values = new ContentValues();
         values.put(KEY_SCHEDULED_TIME, scheduled_time);
@@ -88,18 +88,18 @@ public class DbAdapter {
         }
         catch (Exception e)
         {
-            Log.d("updateToDo()","mdb.update() error");
+            Log.d("DbAdapter", "updateToDo():mdb.update() error");
             e.printStackTrace();
         }
         Toast.makeText(mCtx,"更新成功!", Toast.LENGTH_SHORT).show();
-        Log.d(CLASSNAME+":updateToDo()","End, ret="+ret);
+        Log.d("DbAdapter", "updateToDo():End, ret="+ret);
         return ret;
     }
 
     public boolean dropTodo(int id)
     {
         int count=0;
-        Log.d(CLASSNAME+":dropTodo()","Begin, id="+id);
+        Log.d("DbAdapter", "dropTodo():Begin, id="+id);
         String[] args = {Integer.toString(id)};
         try
         {
@@ -108,16 +108,16 @@ public class DbAdapter {
         }
         catch (Exception e)
         {
-            Log.d(CLASSNAME+":dropTodo()","mdb.delete() error");
+            Log.d("DbAdapter","dropTodo():mdb.delete() error");
             e.printStackTrace();
         }
-        Log.d(CLASSNAME+":dropTodo()","End");
+        Log.d("DbAdapter","dropTodo():End");
         return true;
     }
 
     public Cursor queryById(int id)
     {
-        Log.d(CLASSNAME+":queryById()","Begin");
+        Log.d("DbAdapter","queryById():Begin");
         Cursor mCursor = null;
         try
         {
@@ -126,24 +126,24 @@ public class DbAdapter {
                     null, null, "scheduled_time", null);
             if (mCursor!=null)
             {
-                Log.d(CLASSNAME+":queryById()", "Count="+mCursor.getCount());
+                Log.d("DbAdapter","queryById():Count="+mCursor.getCount());
                 mCursor.moveToFirst();
             }
             else
-                Log.d(CLASSNAME+":queryById()", "mCursor=null");
+                Log.d("DbAdapter", "queryById():mCursor=null");
         }
         catch (Exception e)
         {
-            Log.d(CLASSNAME+":queryById()","mdb.query() error");
+            Log.d("DbAdapter", "queryById():mdb.query() error");
             e.printStackTrace();
         }
-        Log.d(CLASSNAME+":queryById()","End");
+        Log.d("DbAdapter", "queryById():End");
         return mCursor;
     }
 
     public Cursor listToDo()
     {
-        Log.d(CLASSNAME+":listToDo()","Begin");
+        Log.d("DbAdapter","listToDo():Begin");
         Cursor mCursor = null;
         try
         {
@@ -155,10 +155,10 @@ public class DbAdapter {
         }
         catch (Exception e)
         {
-            Log.d(CLASSNAME+":listToDo()","mdb.query() error");
+            Log.d("DbAdapter","listToDo():mdb.query() error");
             e.printStackTrace();
         }
-        Log.d(CLASSNAME+":listToDo()","End");
+        Log.d("DbAdapter","listToDo():End");
         return mCursor;
     }
 

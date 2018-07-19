@@ -3,9 +3,13 @@ package com.example.kevin.mytodolist1;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,16 +17,20 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -37,10 +45,16 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
     TextView txtEditTitle, txtCompleteTime, txtCreateTime;
     Button btnCancel, btnSubmit;
     CheckBox chkComplete;
+    Spinner spinner;
+    TypedArray colorCode, colorName;
+    ArrayList<ColorItem> colorList=null;
+    ColorAdapter colorAdapter=null;
+    ColorItem colorItem=null;
+    ConstraintLayout vEdit;
     private Bundle bData;
     private DbAdapter dbAdapter;
-    private int index, id, type, color;
-    private String name, notes;
+    private int index, id, type;
+    private String name, notes, color="#FFFFFF";
     private Timestamp scheduled_time, create_time, complete_time;
     boolean isChanged=false;
 
@@ -83,10 +97,10 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case REQUEST_FROM_DROP:
                 txtEditTitle.setText(getResources().getString(R.string.drop_data));
-                edtScheduledTime.setEnabled(false);
+                edtSchdDate.setEnabled(false);
+                edtSchdTime.setEnabled(false);
                 edtNotes.setEnabled(false);
                 chkComplete.setEnabled(false);
-                edtScheduledTime.setEnabled(false);
                 refreshView();
                 break;
         }
@@ -96,6 +110,7 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
 
     private void initView()
     {
+        vEdit=findViewById(R.id.vEdit);
         txtEditTitle=findViewById(R.id.txtEditTitle);
 //        edtScheduledTime=findViewById(R.id.edtScheduledTime);
         edtSchdDate=findViewById(R.id.edtSchdDate);
@@ -110,6 +125,64 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
         edtSchdTime.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnSubmit.setOnClickListener(this);
+        chkComplete.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                Toast.makeText(EditTodoActivity.this, "chkComplete.isChecked="+((chkComplete.isChecked()?"true":"false")), Toast.LENGTH_SHORT).show();
+                if (chkComplete.isChecked())
+                {
+                    chkComplete.setText(R.string.completed);
+                    Calendar calendar= Calendar.getInstance(TimeZone.getDefault());
+                    complete_time=new Timestamp(calendar.getTimeInMillis());
+                    txtCompleteTime.setText(sdf.format(complete_time));
+                }
+                else
+                {
+                    chkComplete.setText(R.string.unfinished);
+                    complete_time = null;
+                    txtCompleteTime.setText("");
+                }
+            }
+        });
+        spinner=findViewById(R.id.spinner);
+        colorList=new ArrayList<ColorItem>();
+        readColor();
+        colorAdapter=new ColorAdapter(this, colorList);
+        spinner.setAdapter(colorAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                EditTodoActivity.this.color=EditTodoActivity.this.colorList.get(position).getCode();
+                color=colorList.get(position).getCode();
+//                vEdit.setBackgroundColor(Color.parseColor(color));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+
+    private void readColor()
+    {
+        int count;
+        String c, s;
+        Resources res = getResources();
+        colorCode = res.obtainTypedArray(R.array.mycolor_code);
+        colorName = res.obtainTypedArray(R.array.mycolor_name);
+        for (int i=0; i<colorCode.length(); i++)
+        {
+            c=colorCode.getString(i);
+            if (i<colorName.length())
+                s=colorName.getString(i);
+            else
+                s=c;
+            Log.d("readColor()", "#"+i+": colorName="+s+", colorCode="+c);
+            colorList.add(new ColorItem(c, s));
+        }
+//        TypedArray colors = res.obtainTypedArray(R.array.colors);
+//        int color = colors.getColor(0,0);
     }
 
     private Timestamp str2Timestamp(String s)
@@ -161,59 +234,77 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
         create_time=str2Timestamp(cursor.getString(cursor.getColumnIndex(DbAdapter.KEY_CREATE_TIME)));
         complete_time=str2Timestamp(cursor.getString(cursor.getColumnIndex(DbAdapter.KEY_COMPLETE_TIME)));
         notes=cursor.getString(cursor.getColumnIndex(DbAdapter.KEY_NOTES));
-        color=cursor.getInt(cursor.getColumnIndex(DbAdapter.KEY_COLOR));
+        color=cursor.getString(cursor.getColumnIndex(DbAdapter.KEY_COLOR));
         edtSchdDate.setText((scheduled_time==null?"":sdfDate.format(scheduled_time)));
         edtSchdTime.setText((scheduled_time==null?"":sdfTime.format(scheduled_time)));
         txtCreateTime.setText((create_time==null?"":sdf.format(create_time)));
         txtCompleteTime.setText((complete_time==null?"":sdf.format(complete_time)));
-        chkComplete.setSelected((complete_time==null?false:true));
         edtNotes.setText(notes);
+        if (complete_time==null)
+        {
+            chkComplete.setChecked(false);
+            chkComplete.setText(R.string.unfinished);
+            txtCompleteTime.setText("");
+        }
+        else
+        {
+            chkComplete.setChecked(true);
+            chkComplete.setText(R.string.completed);
+            txtCompleteTime.setText(sdf.format(complete_time));
+        }
+        for (int i=0; i<colorCode.length();i++)
+        {
+            if (colorCode.getString(i).equals(color)) {
+                spinner.setSelection(i);
+                break;
+            }
+        }
+//        vEdit.setBackgroundColor(Color.parseColor(color));
     }
 
     private void setEmptyView()
     {
-        int iColor=0;
         Date tmpDate=new Date();
         index=0;
 
         Calendar calendar=Calendar.getInstance(TimeZone.getDefault());
         edtSchdDate.setText(sdfDate.format(tmpDate));
-        Log.d("EditTodoActivity:setEmptyView()", "edtSchdDate="+edtSchdDate.getText().toString());
+        Log.d("EditTodoActivity", "setEmptyView():edtSchdDate="+edtSchdDate.getText().toString());
         edtSchdTime.setText(sdfTime.format(tmpDate));
-        Log.d("EditTodoActivity:setEmptyView()", "edtSchdTime="+edtSchdTime.getText().toString());
+        Log.d("EditTodoActivity", "setEmptyView():edtSchdTime="+edtSchdTime.getText().toString());
         txtCreateTime.setText(sdf.format(tmpDate));
-        Log.d("EditTodoActivity:setEmptyView()", "txtCreateTime="+txtCreateTime.getText().toString());
-//        edtScheduledTime.setText("");
-//        Log.d("EditTodoActivity:setEmptyView()", "edtScheduledTime="+edtScheduledTime.getText().toString());
+        Log.d("EditTodoActivity", "setEmptyView():txtCreateTime="+txtCreateTime.getText().toString());
         txtCompleteTime.setText("");
-        Log.d("EditTodoActivity:setEmptyView()", "txtCompleteTime="+txtCompleteTime.getText().toString());
+        Log.d("EditTodoActivity", "setEmptyView():txtCompleteTime="+txtCompleteTime.getText().toString());
         edtNotes.setText("");
-        Log.d("EditTodoActivity:setEmptyView()", "edtNotes="+edtNotes.getText().toString());
-        iColor=0xFFFFFF;
-        Log.d("EditTodoActivity:setEmptyView()", "iColor="+String.valueOf(iColor));
+        Log.d("EditTodoActivity", "setEmptyView():edtNotes="+edtNotes.getText().toString());
+        color="#FFFFFF";
+        Log.d("EditTodoActivity", "setEmptyView():color="+color);
     }
 
     @Override
     public void onClick(View v) {
-        int color, obj_id=v.getId();
+        int obj_id=v.getId();
         long dbRet;
         final int mYear, mMonth, mDay, mHour, mMinute, mSec;
-        String create_time, scheduled_time, complete_time, notes;
+        String create_time, scheduled_time, complete_time, notes, color;
         final Calendar calendar;
         create_time=txtCreateTime.getText().toString().trim();
         scheduled_time=edtSchdDate.getText().toString().trim().concat(" ").concat(edtSchdTime.getText().toString().trim());
         complete_time=txtCompleteTime.getText().toString().trim();
+        complete_time=(complete_time.length()==0?null:complete_time);
         notes=edtNotes.getText().toString().trim();
+        color=this.color;
+        Log.d("onClick()", "spinner.getSelectedItem().toString()="+((ColorItem)spinner.getSelectedItem()).getCode());
         Intent retIntent=getIntent();
-        color=0;
-        Log.d("EditTodoActivity:onClck()", "objid="+obj_id+", type="+type);
+        Log.d("EditTodoActivity", "onClck():"+v.getClass().getName()+", type="+type);
         switch (obj_id)
         {
             case R.id.btnSubmit:
                 switch (type)
                 {
                     case REQUEST_FROM_ADD:
-                        Log.d("EditTodoActivity:onClck()", "REQUEST_FROM_ADD");
+                        Log.d("EditTodoActivity", "onClck():btnSubmit:REQUEST_FROM_ADD");
                         dbRet=dbAdapter.createTodo(scheduled_time, notes, color);
                         if (dbRet>0)
                             retIntent.putExtra("id", (int)dbRet);
@@ -223,6 +314,7 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                         finish();
                         break;
                     case REQUEST_FROM_EDIT:
+                        Log.d("EditTodoActivity", "onClck():btnSubmit:REQUEST_FROM_EDIT");
                         dbRet=dbAdapter.updateToDo(id, scheduled_time, complete_time, notes, color);
 
                         if (dbRet>0)
@@ -233,6 +325,7 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                         finish();
                         break;
                     case REQUEST_FROM_DROP:
+                        Log.d("EditTodoActivity", "onClck():btnSubmit:REQUEST_FROM_DROP");
                         if (dbAdapter.dropTodo(id))
                             retIntent.putExtra("id", index);
                         else
@@ -247,18 +340,22 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                 switch (type)
                 {
                     case REQUEST_FROM_ADD:
+                        Log.d("EditTodoActivity", "onClck():btnCancel:REQUEST_FROM_ADD");
                         setResult(RESULT_FROM_ADD, intent);
                         break;
                     case REQUEST_FROM_EDIT:
+                        Log.d("EditTodoActivity", "onClck():btnCancel:REQUEST_FROM_EDIT");
                         setResult(RESULT_FROM_EDIT, intent);
                         break;
                     case REQUEST_FROM_DROP:
+                        Log.d("EditTodoActivity", "onClck():btnCancel:REQUEST_FROM_DROP");
                         setResult(RESULT_FROM_DROP, intent);
                         break;
                 }
                 finish();
                 break;
             case R.id.edtSchdDate:
+                Log.d("EditTodoActivity", "onClck():edtSchdDate");
                 calendar = Calendar.getInstance(TimeZone.getDefault());
                 if (edtSchdDate.getText().toString().length()>0)
                 {
@@ -279,10 +376,11 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                         //將選定日期設定至edt_birth                            calendar
                         calendar.set(year, month, dayOfMonth);
                         edtSchdDate.setText(sdfDate.format(calendar.getTime()));}
-                    }, mYear,mMonth,mDay);
+                }, mYear,mMonth,mDay);
                 datePickerDialog.show();
                 break;
             case R.id.edtSchdTime:
+                Log.d("EditTodoActivity", "onClck():edtSchdTime");
                 calendar = Calendar.getInstance(TimeZone.getDefault());
                 if (edtSchdTime.getText().toString().length()>0)
                 {
@@ -303,11 +401,9 @@ public class EditTodoActivity extends AppCompatActivity implements View.OnClickL
                         calendar.set(Calendar.MINUTE, minute);
                         calendar.set(Calendar.SECOND, 0);
                         edtSchdTime.setText(sdfTime.format(calendar.getTime()));}
-                    }, mHour, mMinute, true);
+                }, mHour, mMinute, true);
                 timePickerDialog.show();
                 break;
-            case R.id.chkComplete:
-                Log.d("chkComplete:", "chkCOmplete.isEnable()="+(chkComplete.isSelected()?"true":"false"));
 
         }
     }

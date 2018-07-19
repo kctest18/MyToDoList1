@@ -14,7 +14,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String KEY_COLOR = "color";
     private static final String DATABASE_NAME = "MyDatabase";
     private static final String TABLE_NAME = "todo";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -28,7 +28,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 KEY_SCHEDULED_TIME + " datetime," +
                 KEY_COMPLETE_TIME + " datetime," +
                 KEY_NOTES + " text," +
-                KEY_COLOR + " integer);";
+                KEY_COLOR + " text);";
 //        db.execSQL("drop table "+DATABASE_NAME+"."+TABLE_NAME+";");
         db.execSQL(DATABASE_CREATE);
     }

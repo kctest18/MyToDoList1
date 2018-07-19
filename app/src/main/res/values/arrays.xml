@@ -1,2 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <array name="mycolor_name">
+        <item>White</item>
+        <item>Red</item>
+        <item>Orange</item>
+        <item>Yellow</item>
+        <item>Green</item>
+        <item>SkyBlue</item>
+        <item>Blue</item>
+        <item>purple</item>
+    </array>
+    <array name="mycolor_code">
+        <item>#FFFFFF</item>
+        <item>#ff0000</item>
+        <item>#FFA500</item>
+        <item>#FFFF00</item>
+        <item>#00FF00</item>
+        <item>#007FFF</item>
+        <item>#0000FF</item>
+        <item>#8B00FF</item>
+    </array>
+</resources>
